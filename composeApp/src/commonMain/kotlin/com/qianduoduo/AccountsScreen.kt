@@ -38,10 +38,14 @@ internal fun AccountsScreen(
             ),
         ) {
             Column(Modifier.padding(16.dp)) {
-                Text("净资产", style = MaterialTheme.typography.labelMedium)
+                Text("账户余额合计", style = MaterialTheme.typography.labelMedium)
                 Spacer(Modifier.height(4.dp))
                 Text(Money.format(balances.values.sum()), style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(4.dp))
+                Text("所有有效账户当前余额之和，不等于本期结余",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f))
             }
         }
         Spacer(Modifier.height(12.dp))
