@@ -33,7 +33,8 @@ class LedgerUiTest {
             waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("支出分类 Top 3").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithText("餐饮").assertExists()
             clickIcon("账户")
-            onNodeWithText("净资产").assertIsDisplayed()
+            onNodeWithText("账户余额合计").assertIsDisplayed()
+            onNodeWithText("所有有效账户当前余额之和，不等于本期结余").assertIsDisplayed()
             onAllNodesWithText("-¥29.90").assertCountEquals(2)
             clickIcon("返回")
             clickText(LedgerPeriod().label(today()))
