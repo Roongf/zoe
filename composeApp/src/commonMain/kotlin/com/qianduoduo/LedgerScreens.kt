@@ -118,18 +118,27 @@ internal fun TimelineScreen(
                     IconAction(Icons.AutoMirrored.Filled.KeyboardArrowRight, "下一月") { onPeriod(period.shiftMonth(1, today)) }
                 }
             }
-            if (entries.isEmpty()) {
-                Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("这个时间段还没有账目", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("点右下角「记一笔」开始", color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            } else LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 96.dp)) {
+            LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 96.dp)) {
                 item("summary") { SummaryCard(expense, income) }
                 if (top.isNotEmpty()) item("top-categories") { CategoryRanking(top, expense, onExpense) }
-                transactionItems(groups, data, today, onEdit = onEdit)
+                if (entries.isEmpty()) {
+                    item("empty-state") {
+                        Column(
+                            Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 28.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Text("这个时间段还没有账目", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                "收支汇总已按零计算，点右下角「记一笔」开始",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                } else {
+                    transactionItems(groups, data, today, onEdit = onEdit)
+                }
             }
         }
     }
