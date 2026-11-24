@@ -25,6 +25,8 @@ class LedgerUiTest {
             setContent { QianDuoDuoApp(store) }
             waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("钱多多").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithText("这个时间段还没有账目").assertIsDisplayed()
+            onNodeWithText("本期收支").assertIsDisplayed()
+            onNodeWithText("结余 = 收入 − 支出；账户间转账不计入").assertIsDisplayed()
             clickText("记一笔")
             onNodeWithTag("editor-amount").performTextInput("29.90")
             clickText("餐饮")
@@ -40,6 +42,7 @@ class LedgerUiTest {
             clickText(LedgerPeriod().label(today()))
             clickText("上月")
             onNodeWithText("这个时间段还没有账目").assertIsDisplayed()
+            onNodeWithText("本期收支").assertIsDisplayed()
         }
     }
 
