@@ -1,0 +1,124 @@
+CREATE TABLE account (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'CNY',
+    initial_balance INTEGER NOT NULL DEFAULT 0,
+    icon TEXT,
+    color INTEGER,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    deleted_at INTEGER
+);
+CREATE TABLE budget (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    category_uuid TEXT,
+    period TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    deleted_at INTEGER
+);
+CREATE TABLE category (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    parent_uuid TEXT,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    icon TEXT,
+    color INTEGER,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    deleted_at INTEGER
+);
+CREATE TABLE member (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    display_name TEXT NOT NULL,
+    avatar_url TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+CREATE TABLE txn (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    type TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    account_uuid TEXT NOT NULL,
+    to_account_uuid TEXT,
+    category_uuid TEXT,
+    note TEXT,
+    occurred_at INTEGER NOT NULL,
+    created_by TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    deleted_at INTEGER
+);
+CREATE INDEX account_deleted_at_idx ON account(deleted_at);
+CREATE INDEX account_sort_order_idx ON account(sort_order);
+CREATE INDEX budget_period_idx ON budget(period);
+CREATE INDEX budget_deleted_at_idx ON budget(deleted_at);
+CREATE INDEX category_deleted_at_idx ON category(deleted_at);
+CREATE INDEX category_parent_idx ON category(parent_uuid);
+CREATE INDEX category_kind_idx ON category(kind, sort_order);
+CREATE INDEX txn_occurred_at_idx ON txn(occurred_at DESC);
+CREATE INDEX txn_deleted_at_idx ON txn(deleted_at);
+CREATE INDEX txn_account_idx ON txn(account_uuid);
+CREATE INDEX txn_category_idx ON txn(category_uuid);
+CREATE INDEX txn_type_idx ON txn(type, occurred_at);
+
+allAccounts:
+SELECT * FROM account ORDER BY sort_order, created_at;
+
+activeAccountCount:
+SELECT count(*) FROM account WHERE deleted_at IS NULL;
+
+insertAccount:
+INSERT INTO account VALUES ?;
+
+updateAccount:
+UPDATE account SET name = ?, type = ?, updated_at = ? WHERE uuid = ? AND deleted_at IS NULL;
+
+deleteAccount:
+UPDATE account SET deleted_at = ?, updated_at = ? WHERE uuid = ? AND deleted_at IS NULL;
+
+allCategories:
+SELECT * FROM category WHERE deleted_at IS NULL ORDER BY kind, sort_order, created_at;
+
+activeCategoryCount:
+SELECT count(*) FROM category WHERE deleted_at IS NULL;
+
+insertCategory:
+INSERT INTO category VALUES ?;
+
+visibleTxns:
+SELECT * FROM txn WHERE deleted_at IS NULL ORDER BY occurred_at DESC, created_at DESC;
+
+allTxnCount:
+SELECT count(*) FROM txn;
+
+txnsInRange:
+SELECT * FROM txn WHERE deleted_at IS NULL AND occurred_at >= :fromDate AND occurred_at < :toDate
+ORDER BY occurred_at DESC, created_at DESC;
+
+insertTxn:
+INSERT INTO txn VALUES ?;
+
+updateTxn:
+UPDATE txn
+SET type = ?, amount = ?, account_uuid = ?, to_account_uuid = ?, category_uuid = ?,
+    note = ?, occurred_at = ?, updated_at = ?
+WHERE uuid = ? AND deleted_at IS NULL;
+
+deleteTxn:
+UPDATE txn SET deleted_at = ?, updated_at = ? WHERE uuid = ? AND deleted_at IS NULL;
+
+totalBudgetForPeriod:
+SELECT * FROM budget WHERE deleted_at IS NULL AND period = ? AND category_uuid IS NULL;
+
+budgetsForPeriod:
+SELECT * FROM budget WHERE deleted_at IS NULL AND period = ?;
+
+members:
+SELECT * FROM member ORDER BY created_at;

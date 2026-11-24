@@ -6,7 +6,7 @@ if [[ -z "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" ]] && [[ ! -f local.properties
   exit 1
 fi
 
-gradle :composeApp:assembleDebug
+./gradlew :composeApp:assembleDebug
 
 apk_path="composeApp/build/outputs/apk/debug/composeApp-debug.apk"
 if [[ -f "$apk_path" ]]; then
