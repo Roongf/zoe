@@ -146,6 +146,9 @@ internal fun SummaryCard(expense: Long, income: Long) {
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 14.dp)) {
             Text("本期收支", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            Text("结余 = 收入 − 支出；账户间转账不计入",
+                style = MaterialTheme.typography.bodySmall,
+                color = theme.onPrimaryContainer.copy(alpha = 0.78f))
             Spacer(Modifier.height(12.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SummaryItem("支出", expense, colors.expense, Modifier.weight(1f))
