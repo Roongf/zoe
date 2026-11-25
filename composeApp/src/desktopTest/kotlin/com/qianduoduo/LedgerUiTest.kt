@@ -25,6 +25,8 @@ class LedgerUiTest {
             setContent { QianDuoDuoApp(store) }
             waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("钱多多").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithText("这个时间段还没有账目").assertIsDisplayed()
+            onNodeWithText("本期收支").assertIsDisplayed()
+            onNodeWithText("结余 = 收入 − 支出；账户间转账不计入").assertIsDisplayed()
             clickText("记一笔")
             onNodeWithTag("editor-amount").performTextInput("29.90")
             clickText("餐饮")
@@ -33,12 +35,14 @@ class LedgerUiTest {
             waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("支出分类 Top 3").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithText("餐饮").assertExists()
             clickIcon("账户")
-            onNodeWithText("净资产").assertIsDisplayed()
+            onNodeWithText("账户余额合计").assertIsDisplayed()
+            onNodeWithText("所有有效账户当前余额之和，不等于本期结余").assertIsDisplayed()
             onAllNodesWithText("-¥29.90").assertCountEquals(2)
             clickIcon("返回")
             clickText(LedgerPeriod().label(today()))
             clickText("上月")
             onNodeWithText("这个时间段还没有账目").assertIsDisplayed()
+            onNodeWithText("本期收支").assertIsDisplayed()
         }
     }
 
@@ -263,6 +267,36 @@ class LedgerUiTest {
             assertEquals(original.note, copy.note)
             assertEquals(original.account, copy.account)
             assertEquals(original.category, copy.category)
+        }
+    }
+
+    @Test
+    fun deletingAnAccountRequiresConfirmationAndPreservesItsHistoricalTransactions() = withLedger { store ->
+        store.seed()
+        val before = store.snapshot()
+        val account = before.activeAccounts.single { it.name == "微信" }
+        val category = before.categories.first()
+        val historical = TransactionRecord(
+            newId(), TxnType.EXPENSE, 2580, account.id, null, category.id, "历史账目", nowMillis(),
+        )
+        store.saveTxn(historical, false)
+        runComposeUiTest {
+            setContent { QianDuoDuoApp(store) }
+            waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("钱多多").fetchSemanticsNodes().isNotEmpty() }
+            onNodeWithContentDescription("账户", useUnmergedTree = true).performClick()
+            onNodeWithText("微信", useUnmergedTree = true).performClick()
+            onNodeWithText("删除", useUnmergedTree = true).performClick()
+            onNodeWithText("删除账户？").assertIsDisplayed()
+            onNodeWithText("历史流水会保留", substring = true).assertIsDisplayed()
+            onNodeWithText("保留账户").performClick()
+            onNodeWithText("编辑账户").assertIsDisplayed()
+            assertEquals(account.id, store.snapshot().activeAccounts.single { it.name == "微信" }.id)
+            onNodeWithText("删除", useUnmergedTree = true).performClick()
+            onNodeWithText("确认删除").performClick()
+            waitUntil(timeoutMillis = 10_000) {
+                store.snapshot().activeAccounts.none { it.id == account.id }
+            }
+            assertEquals(historical, store.snapshot().txns.single { it.id == historical.id })
         }
     }
 
