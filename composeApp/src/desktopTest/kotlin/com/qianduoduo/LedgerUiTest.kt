@@ -287,7 +287,7 @@ class LedgerUiTest {
             onNodeWithText("微信", useUnmergedTree = true).performClick()
             onNodeWithText("删除", useUnmergedTree = true).performClick()
             onNodeWithText("删除账户？").assertIsDisplayed()
-            onNodeWithText("历史流水会保留").assertIsDisplayed()
+            onNodeWithText("历史流水会保留", substring = true).assertIsDisplayed()
             onNodeWithText("保留账户").performClick()
             onNodeWithText("编辑账户").assertIsDisplayed()
             assertEquals(account.id, store.snapshot().activeAccounts.single { it.name == "微信" }.id)
