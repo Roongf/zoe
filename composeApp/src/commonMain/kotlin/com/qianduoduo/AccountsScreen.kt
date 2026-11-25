@@ -84,6 +84,7 @@ private fun AccountDialog(
 ) {
     var name by remember { mutableStateOf(account?.name.orEmpty()) }
     var type by remember { mutableStateOf(account?.type ?: AccountType.CASH) }
+    var confirmDelete by remember(account?.id) { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onClose,
         title = { Text(if (account == null) "添加账户" else "编辑账户") },
@@ -100,9 +101,28 @@ private fun AccountDialog(
         confirmButton = { TextButton({ onSave(name.trim(), type) }, enabled = name.isNotBlank()) { Text("保存") } },
         dismissButton = {
             Row {
-                if (account != null) TextButton(onDelete) { Text("删除", color = MaterialTheme.colorScheme.error) }
+                if (account != null) TextButton({ confirmDelete = true }) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
+                }
                 TextButton(onClose) { Text("取消") }
             }
         },
     )
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text("删除账户？") },
+            text = {
+                Text("“${account?.name.orEmpty()}”将从账户列表移除，历史流水会保留。此操作无法直接撤销。")
+            },
+            confirmButton = {
+                TextButton(onClick = onDelete) {
+                    Text("确认删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDelete = false }) { Text("保留账户") }
+            },
+        )
+    }
 }
